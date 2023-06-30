@@ -7,13 +7,22 @@
 
 #include "SDL.h"
 
-/*** DEFINES ***/
+/*** DATA ***/
 
-#define ARR_LEN 200
-#define WIDTH 200 // Must be equal to ARR_LEN
-#define HEIGHT 150
-#define SCALE 5
-#define DELAY 0
+enum algorithm {
+    BUBBLE_SORT,
+    QUICK_SORT
+};
+
+struct config {
+    int width;
+    int height;
+    float scale;
+    int delay;
+    enum algorithm algorithm;
+};
+
+struct config C;
 
 /*** UTILS ***/
 
@@ -36,8 +45,8 @@ int randint(int n) {
 */
 void print_arr(int *arr) {
     printf("[");
-    for (int i = 0; i < ARR_LEN; i++) {
-        if (i == ARR_LEN - 1) printf("%d]\n", arr[i]);
+    for (int i = 0; i < C.width; i++) {
+        if (i == C.width - 1) printf("%d]\n", arr[i]);
         else printf("%d, ", arr[i]);
     }
 }
@@ -57,12 +66,12 @@ void swap(int *arr, int i, int j) {
  * Draw current state of the sorting process.
 */
 void draw_state(int *arr, SDL_Renderer *renderer, int green, int red) {
-    for (int i = 0; i < ARR_LEN; i++) {
+    for (int i = 0; i < C.width; i++) {
         if (i == green) SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
         else if (i == red) SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         else SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
-        SDL_RenderDrawLine(renderer, i, HEIGHT - 1, i, HEIGHT - arr[i]);
+        SDL_RenderDrawLine(renderer, i, C.height - 1, i, C.height - arr[i]);
     }
 }
 
@@ -76,22 +85,17 @@ void update_screen(int *arr, SDL_Renderer *renderer, int i, int j) {
     draw_state(arr, renderer, i, j);
 
     SDL_RenderPresent(renderer);
-    SDL_Delay(DELAY);
+    SDL_Delay(C.delay);
 }
 
 /*** SORTING ALGORITHMS ***/
-
-enum algorithm {
-    BUBBLE_SORT,
-    QUICK_SORT
-};
 
 /**
  * Bubble sort algorithm.
 */
 void bubble_sort(int *arr, SDL_Renderer *renderer) {
-    for (int i = 0; i < ARR_LEN; i++) {
-        for (int j = i; j < ARR_LEN; j++) {
+    for (int i = 0; i < C.width; i++) {
+        for (int j = i; j < C.width; j++) {
             if (arr[i] > arr[j]) swap(arr, i, j);
             update_screen(arr, renderer, i, j);
         }
@@ -141,39 +145,39 @@ void quick_sort(int *arr, int start, int end, SDL_Renderer *renderer) {
  * the final cleanup.
 */
 int main(int argc, char **argv) {
-    int width = 200;
-    int height = 150;
-    int scale = 5;
-    int delay = 0;
-    enum algorithm algorithm = BUBBLE_SORT;
+    C.width = 200;
+    C.height = 150;
+    C.scale = 5;
+    C.delay = 0;
+    C.algorithm = BUBBLE_SORT;
 
     int opt;
     while ((opt = getopt(argc, argv, ":w:h:s:d:")) != -1) {
         switch (opt) {
             case 'w':
-                width = atoi(optarg);
-                if (width <= 0) {
+                C.width = atoi(optarg);
+                if (C.width <= 0) {
                     fprintf(stderr, "Invalid width value\n");
                     return 1;
                 }
                 break;
             case 'h':
-                height = atoi(optarg);
-                if (height <= 0) {
+                C.height = atoi(optarg);
+                if (C.height <= 0) {
                     fprintf(stderr, "Invalid height value\n");
                     return 1;
                 }
                 break;
             case 's':
-                scale = atoi(optarg);
-                if (scale <= 0) {
+                C.scale = atof(optarg);
+                if (C.scale <= 0) {
                     fprintf(stderr, "Invalid scale value\n");
                     return 1;
                 }
                 break;
             case 'd':
-                delay = atoi(optarg);
-                if (delay < 0) {
+                C.delay = atoi(optarg);
+                if (C.delay < 0) {
                     fprintf(stderr, "Invalid delay value\n");
                     return 1;
                 }
@@ -211,8 +215,10 @@ int main(int argc, char **argv) {
             printf("  Bubble sort (default) -- bs\n");
             printf("  Quick sort -- qs\n");
             return 0;
+        } else if (strcmp(argv[arg_pos], "bs") == 0) {
+            C.algorithm = BUBBLE_SORT;
         } else if (strcmp(argv[arg_pos], "qs") == 0) {
-            algorithm = QUICK_SORT;
+            C.algorithm = QUICK_SORT;
         } else {
             fprintf(stderr, "Unknown algorithm (use `help` to see available ones)\n");
             return 1;
@@ -221,10 +227,10 @@ int main(int argc, char **argv) {
 
     srand(time(NULL));
 
-    // Numbers in range [1, HEIGHT - 1]
-    int arr[ARR_LEN];
-    for (int i = 0; i < ARR_LEN; i++) {
-        arr[i] = randint(HEIGHT - 1) + 1;
+    // Numbers in range [1, C.height - 1]
+    int arr[C.width];
+    for (int i = 0; i < C.width; i++) {
+        arr[i] = randint(C.height - 1) + 1;
     }
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -232,7 +238,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    SDL_Window *window = SDL_CreateWindow("Sort Visualizer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH * SCALE, HEIGHT * SCALE, 0);
+    SDL_Window *window = SDL_CreateWindow("Sort Visualizer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, C.width * C.scale, C.height * C.scale, 0);
     if (!window) {
         SDL_Log("Unable to create window: '%s'\n", SDL_GetError());
         return 1;
@@ -244,19 +250,19 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    if (SDL_RenderSetScale(renderer, SCALE, SCALE) != 0) {
+    if (SDL_RenderSetScale(renderer, C.scale, C.scale) != 0) {
         SDL_Log("Unable to set render scale: '%s'\n", SDL_GetError());
         return 1;
     }
 
     clock_t begin = clock();
 
-    switch (algorithm) {
+    switch (C.algorithm) {
         case BUBBLE_SORT:
             bubble_sort(arr, renderer);
             break;
         case QUICK_SORT:
-            quick_sort(arr, 0, ARR_LEN - 1, renderer);
+            quick_sort(arr, 0, C.width - 1, renderer);
             break;
     }
 
