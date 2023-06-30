@@ -296,6 +296,10 @@ int main(int argc, char **argv) {
                     running = 0;
                     break;
                 
+                case SDL_KEYDOWN:
+                    if (event.key.keysym.sym == SDLK_q) running = 0;
+                    break;
+                
                 default:
                     break;
             }
