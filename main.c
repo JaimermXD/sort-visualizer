@@ -1,5 +1,6 @@
 /*** INCLUDES ***/
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -80,6 +81,11 @@ void update_screen(int *arr, SDL_Renderer *renderer, int i, int j) {
 
 /*** SORTING ALGORITHMS ***/
 
+enum algorithm {
+    BUBBLE_SORT,
+    QUICK_SORT
+};
+
 /**
  * Bubble sort algorithm.
 */
@@ -130,12 +136,88 @@ void quick_sort(int *arr, int start, int end, SDL_Renderer *renderer) {
 
 /**
  * Da main loop.
- * Initializes the array along with SDL and its components. It also executes the sorting
- * algorithm, listens for SDL events and performs the final cleanup.
+ * Parses arguments, nitializes the array along with SDL and its components.
+ * It also executes the sorting algorithm, listens for SDL events and performs
+ * the final cleanup.
 */
 int main(int argc, char **argv) {
-    (void)argc;
-    (void)argv;
+    int width = 200;
+    int height = 150;
+    int scale = 5;
+    int delay = 0;
+    enum algorithm algorithm = BUBBLE_SORT;
+
+    int opt;
+    while ((opt = getopt(argc, argv, ":w:h:s:d:")) != -1) {
+        switch (opt) {
+            case 'w':
+                width = atoi(optarg);
+                if (width <= 0) {
+                    fprintf(stderr, "Invalid width value\n");
+                    return 1;
+                }
+                break;
+            case 'h':
+                height = atoi(optarg);
+                if (height <= 0) {
+                    fprintf(stderr, "Invalid height value\n");
+                    return 1;
+                }
+                break;
+            case 's':
+                scale = atoi(optarg);
+                if (scale <= 0) {
+                    fprintf(stderr, "Invalid scale value\n");
+                    return 1;
+                }
+                break;
+            case 'd':
+                delay = atoi(optarg);
+                if (delay < 0) {
+                    fprintf(stderr, "Invalid delay value\n");
+                    return 1;
+                }
+                break;
+            case ':':
+                fprintf(stderr, "Option requires a value\n");
+                return 1;
+            case '?':
+                fprintf(stderr, "Unknown option\n");
+                return 1;
+        }
+    }
+
+    int args_len = 0;
+    int arg_pos;
+    for (; optind < argc; optind++) {
+        if (args_len == 0) arg_pos = optind;
+        args_len++;
+    }
+    
+    if (args_len > 1) {
+        fprintf(stderr, "Too many arguments provided (use `help` to see usage)");
+        return 1;
+    } else if (args_len == 1) {
+        if (strcmp(argv[arg_pos], "help") == 0) {
+            printf("Usage: sort-visualizer [-w WIDTH] [-h HEIGHT] [-s SCALE] [-d DELAY] [ALGORITHM]\n");
+            printf("\n");
+            printf("Default values:\n");
+            printf("  WIDTH -- 200\n");
+            printf("  HEIGHT -- 150\n");
+            printf("  SCALE -- 5\n");
+            printf("  DELAY -- 0\n");
+            printf("\n");
+            printf("Available algorithms:\n");
+            printf("  Bubble sort (default) -- bs\n");
+            printf("  Quick sort -- qs\n");
+            return 0;
+        } else if (strcmp(argv[arg_pos], "qs") == 0) {
+            algorithm = QUICK_SORT;
+        } else {
+            fprintf(stderr, "Unknown algorithm (use `help` to see available ones)\n");
+            return 1;
+        }
+    }
 
     srand(time(NULL));
 
@@ -169,8 +251,14 @@ int main(int argc, char **argv) {
 
     clock_t begin = clock();
 
-    // bubble_sort(arr, renderer);
-    quick_sort(arr, 0, ARR_LEN - 1, renderer);
+    switch (algorithm) {
+        case BUBBLE_SORT:
+            bubble_sort(arr, renderer);
+            break;
+        case QUICK_SORT:
+            quick_sort(arr, 0, ARR_LEN - 1, renderer);
+            break;
+    }
 
     clock_t end = clock();
 
