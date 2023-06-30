@@ -92,6 +92,40 @@ void bubble_sort(int *arr, SDL_Renderer *renderer) {
     }
 }
 
+/**
+ * Quick sort helper function.
+ * Partitions array in two sub-arrays determined by the pivot.
+*/
+int partition(int *arr, int start, int end, SDL_Renderer *renderer) {
+    int pivot = arr[end];
+    int i = start - 1;
+
+    for (int j = start; j <= end - 1; j++) {
+        if (arr[j] < pivot) {
+            i++;
+            swap(arr, i, j);
+        }
+
+        update_screen(arr, renderer, i, j);
+    }
+
+    i++;
+    swap(arr, i, end);
+
+    return i;
+}
+
+/**
+ * Quick sort algorithm.
+*/
+void quick_sort(int *arr, int start, int end, SDL_Renderer *renderer) {
+    if (end <= start) return;
+
+    int pivot = partition(arr, start, end, renderer);
+    quick_sort(arr, start, pivot - 1, renderer);
+    quick_sort(arr, pivot + 1, end, renderer);
+}
+
 /*** MAIN ***/
 
 /**
@@ -135,7 +169,8 @@ int main(int argc, char **argv) {
 
     clock_t begin = clock();
 
-    bubble_sort(arr, renderer);
+    // bubble_sort(arr, renderer);
+    quick_sort(arr, 0, ARR_LEN - 1, renderer);
 
     clock_t end = clock();
 
