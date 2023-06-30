@@ -136,15 +136,13 @@ void quick_sort(int *arr, int start, int end, SDL_Renderer *renderer) {
     quick_sort(arr, pivot + 1, end, renderer);
 }
 
-/*** MAIN ***/
+/*** ARGUMENTS ***/
 
 /**
- * Da main loop.
- * Parses arguments, nitializes the array along with SDL and its components.
- * It also executes the sorting algorithm, listens for SDL events and performs
- * the final cleanup.
+ * Parse command-line arguments.
+ * Sets global config defaults and changes optional values accordingly.
 */
-int main(int argc, char **argv) {
+void parse_args(int argc, char **argv) {
     C.width = 200;
     C.height = 150;
     C.scale = 5;
@@ -158,39 +156,45 @@ int main(int argc, char **argv) {
                 C.width = atoi(optarg);
                 if (C.width <= 0) {
                     fprintf(stderr, "Invalid width value\n");
-                    return 1;
+                    exit(1);
                 }
                 break;
             case 'h':
                 C.height = atoi(optarg);
                 if (C.height <= 0) {
                     fprintf(stderr, "Invalid height value\n");
-                    return 1;
+                    exit(1);
                 }
                 break;
             case 's':
                 C.scale = atof(optarg);
                 if (C.scale <= 0) {
                     fprintf(stderr, "Invalid scale value\n");
-                    return 1;
+                    exit(1);
                 }
                 break;
             case 'd':
                 C.delay = atoi(optarg);
                 if (C.delay < 0) {
                     fprintf(stderr, "Invalid delay value\n");
-                    return 1;
+                    exit(1);
                 }
                 break;
             case ':':
                 fprintf(stderr, "Option requires a value\n");
-                return 1;
+                exit(1);
             case '?':
                 fprintf(stderr, "Unknown option\n");
-                return 1;
+                exit(1);
         }
     }
+}
 
+/**
+ * Handle command-line arguments.
+ * Checks number of non-optional arguments and sets algorithm.
+*/
+void handle_args(int argc, char **argv) {
     int args_len = 0;
     int arg_pos;
     for (; optind < argc; optind++) {
@@ -200,7 +204,7 @@ int main(int argc, char **argv) {
     
     if (args_len > 1) {
         fprintf(stderr, "Too many arguments provided (use `help` to see usage)");
-        return 1;
+        exit(1);
     } else if (args_len == 1) {
         if (strcmp(argv[arg_pos], "help") == 0) {
             printf("Usage: sort-visualizer [-w WIDTH] [-h HEIGHT] [-s SCALE] [-d DELAY] [ALGORITHM]\n");
@@ -214,16 +218,28 @@ int main(int argc, char **argv) {
             printf("Available algorithms:\n");
             printf("  Bubble sort (default) -- bs\n");
             printf("  Quick sort -- qs\n");
-            return 0;
+            exit(0);
         } else if (strcmp(argv[arg_pos], "bs") == 0) {
             C.algorithm = BUBBLE_SORT;
         } else if (strcmp(argv[arg_pos], "qs") == 0) {
             C.algorithm = QUICK_SORT;
         } else {
             fprintf(stderr, "Unknown algorithm (use `help` to see available ones)\n");
-            return 1;
+            exit(1);
         }
     }
+}
+
+/*** MAIN ***/
+
+/**
+ * Da main loop.
+ * Initializes the array along with SDL and its components, it also executes the
+ * sorting algorithm, listens for SDL events and performs the final cleanup.
+*/
+int main(int argc, char **argv) {
+    parse_args(argc, argv);
+    handle_args(argc, argv);
 
     srand(time(NULL));
 
