@@ -10,6 +10,7 @@
 /*** DATA ***/
 
 enum algorithm {
+    SELECTION_SORT,
     BUBBLE_SORT,
     QUICK_SORT
 };
@@ -91,6 +92,21 @@ void update_screen(int *arr, SDL_Renderer *renderer, int i, int j) {
 /*** SORTING ALGORITHMS ***/
 
 /**
+ * Selection sort algorithm.
+*/
+void selection_sort(int *arr, SDL_Renderer *renderer) {
+    for (int i = 0; i < C.width - 1; i++) {
+        int min = i;
+        for (int j = i + 1; j < C.width; j++) {
+            if (arr[j] < arr[min]) min = j;
+            update_screen(arr, renderer, i, j);
+        }
+
+        if (min != i) swap(arr, i, min);
+    }
+}
+
+/**
  * Bubble sort algorithm.
 */
 void bubble_sort(int *arr, SDL_Renderer *renderer) {
@@ -147,7 +163,7 @@ void parse_args(int argc, char **argv) {
     C.height = 150;
     C.scale = 5;
     C.delay = 0;
-    C.algorithm = BUBBLE_SORT;
+    C.algorithm = SELECTION_SORT;
 
     int opt;
     while ((opt = getopt(argc, argv, ":w:h:s:d:")) != -1) {
@@ -216,9 +232,12 @@ void handle_args(int argc, char **argv) {
             printf("  DELAY -- 0\n");
             printf("\n");
             printf("Available algorithms:\n");
-            printf("  Bubble sort (default) -- bs\n");
+            printf("  Selection sort (default) -- ss\n");
+            printf("  Bubble sort -- bs\n");
             printf("  Quick sort -- qs\n");
             exit(0);
+        } else if (strcmp(argv[arg_pos], "ss") == 0) {
+            C.algorithm = SELECTION_SORT;
         } else if (strcmp(argv[arg_pos], "bs") == 0) {
             C.algorithm = BUBBLE_SORT;
         } else if (strcmp(argv[arg_pos], "qs") == 0) {
@@ -274,6 +293,9 @@ int main(int argc, char **argv) {
     clock_t begin = clock();
 
     switch (C.algorithm) {
+        case SELECTION_SORT:
+            selection_sort(arr, renderer);
+            break;
         case BUBBLE_SORT:
             bubble_sort(arr, renderer);
             break;
