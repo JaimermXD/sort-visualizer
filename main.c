@@ -13,6 +13,7 @@ enum algorithm {
     SELECTION_SORT,
     INSERTION_SORT,
     BUBBLE_SORT,
+    MERGE_SORT,
     QUICK_SORT
 };
 
@@ -139,6 +140,61 @@ void bubble_sort(int *arr, SDL_Renderer *renderer) {
 }
 
 /**
+ * Merge sort helper function.
+ * Combines sorted sub-arrays.
+*/
+void merge_sorted(int *arr, int l, int m, int r, SDL_Renderer *renderer) {
+    int left_len = m - l + 1;
+    int right_len = r - m;
+
+    int tmp_left[left_len];
+    int tmp_right[right_len];
+
+    for (int i = 0; i < left_len; i++) {
+        tmp_left[i] = arr[l + i];
+    }
+
+    for (int i = 0; i < right_len; i++) {
+        tmp_right[i] = arr[m + 1 + i];
+    }
+
+    int i, j, k;
+    for (i = 0, j = 0, k = l; k <= r; k++) {
+        if (i < left_len && (j >= right_len || tmp_left[i] <= tmp_right[j])) {
+            arr[k] = tmp_left[i];
+            i++;
+        } else {
+            arr[k] = tmp_right[j];
+            j++;
+        }
+
+        update_screen(arr, renderer, r, k);
+    }
+}
+
+/**
+ * Merge sort helper function.
+ * Partitions the array into smaller sub-arrays recursively.
+*/
+void merge_sort_recursive(int *arr, int l, int r, SDL_Renderer *renderer) {
+    if (l >= r) return;
+
+    int m = l + (r - l) / 2;
+
+    merge_sort_recursive(arr, l, m, renderer);
+    merge_sort_recursive(arr, m + 1, r, renderer);
+
+    merge_sorted(arr, l, m, r, renderer);
+}
+
+/**
+ * Merge sort algorithm.
+*/
+void merge_sort(int *arr, SDL_Renderer *renderer) {
+    merge_sort_recursive(arr, 0, C.width - 1, renderer);
+}
+
+/**
  * Quick sort helper function.
  * Partitions array in two sub-arrays determined by the pivot.
 */
@@ -256,6 +312,7 @@ void handle_args(int argc, char **argv) {
             printf("  Selection sort -- ss\n");
             printf("  Insertion sort -- is\n");
             printf("  Bubble sort -- bs\n");
+            printf("  Merge sort -- ms\n");
             printf("  Quick sort -- qs\n");
             exit(0);
         } else if (strcmp(argv[arg_pos], "ss") == 0) {
@@ -264,6 +321,8 @@ void handle_args(int argc, char **argv) {
             C.algorithm = INSERTION_SORT;
         } else if (strcmp(argv[arg_pos], "bs") == 0) {
             C.algorithm = BUBBLE_SORT;
+        } else if (strcmp(argv[arg_pos], "ms") == 0) {
+            C.algorithm = MERGE_SORT;
         } else if (strcmp(argv[arg_pos], "qs") == 0) {
             C.algorithm = QUICK_SORT;
         } else {
@@ -325,6 +384,9 @@ int main(int argc, char **argv) {
             break;
         case BUBBLE_SORT:
             bubble_sort(arr, renderer);
+            break;
+        case MERGE_SORT:
+            merge_sort(arr, renderer);
             break;
         case QUICK_SORT:
             quick_sort(arr, 0, C.width - 1, renderer);
