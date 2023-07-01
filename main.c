@@ -250,9 +250,10 @@ void handle_args(int argc, char **argv) {
             printf("  HEIGHT -- 150\n");
             printf("  SCALE -- 5\n");
             printf("  DELAY -- 0\n");
+            printf("  ALGORITHM -- ss\n");
             printf("\n");
             printf("Available algorithms:\n");
-            printf("  Selection sort (default) -- ss\n");
+            printf("  Selection sort -- ss\n");
             printf("  Insertion sort -- is\n");
             printf("  Bubble sort -- bs\n");
             printf("  Quick sort -- qs\n");
