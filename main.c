@@ -11,6 +11,7 @@
 
 enum algorithm {
     SELECTION_SORT,
+    INSERTION_SORT,
     BUBBLE_SORT,
     QUICK_SORT
 };
@@ -103,6 +104,25 @@ void selection_sort(int *arr, SDL_Renderer *renderer) {
         }
 
         if (min != i) swap(arr, i, min);
+    }
+}
+
+/**
+ * Insertion sort algorithm.
+*/
+void insertion_sort(int *arr, SDL_Renderer *renderer) {
+    for (int i = 1; i < C.width; i++) {
+        int key = arr[i];
+        int j = i - 1;
+
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j--;
+
+            update_screen(arr, renderer, i, j);
+        }
+
+        arr[j + 1] = key;
     }
 }
 
@@ -233,11 +253,14 @@ void handle_args(int argc, char **argv) {
             printf("\n");
             printf("Available algorithms:\n");
             printf("  Selection sort (default) -- ss\n");
+            printf("  Insertion sort -- is\n");
             printf("  Bubble sort -- bs\n");
             printf("  Quick sort -- qs\n");
             exit(0);
         } else if (strcmp(argv[arg_pos], "ss") == 0) {
             C.algorithm = SELECTION_SORT;
+        } else if (strcmp(argv[arg_pos], "is") == 0) {
+            C.algorithm = INSERTION_SORT;
         } else if (strcmp(argv[arg_pos], "bs") == 0) {
             C.algorithm = BUBBLE_SORT;
         } else if (strcmp(argv[arg_pos], "qs") == 0) {
@@ -295,6 +318,9 @@ int main(int argc, char **argv) {
     switch (C.algorithm) {
         case SELECTION_SORT:
             selection_sort(arr, renderer);
+            break;
+        case INSERTION_SORT:
+            insertion_sort(arr, renderer);
             break;
         case BUBBLE_SORT:
             bubble_sort(arr, renderer);
