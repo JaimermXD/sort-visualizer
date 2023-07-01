@@ -131,8 +131,8 @@ void insertion_sort(int *arr, SDL_Renderer *renderer) {
 */
 void bubble_sort(int *arr, SDL_Renderer *renderer) {
     for (int i = 0; i < C.width; i++) {
-        for (int j = 0; j < C.width - 1; j++) {
-            if (arr[j] > arr[j + 1]) swap(arr, j, j + 1);
+        for (int j = 0; j < C.width - 1 - i; j++) {
+            if (arr[j] > arr[j + 1]) swap(arr, j, j + 1);    
             update_screen(arr, renderer, j, j + 1);
         }
     }
