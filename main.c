@@ -14,7 +14,8 @@ enum algorithm {
     INSERTION_SORT,
     BUBBLE_SORT,
     MERGE_SORT,
-    QUICK_SORT
+    QUICK_SORT,
+    SHELL_SORT
 };
 
 struct config {
@@ -228,6 +229,26 @@ void quick_sort(int *arr, int start, int end, SDL_Renderer *renderer) {
     quick_sort(arr, pivot + 1, end, renderer);
 }
 
+/**
+ * Shell sort algorithm.
+*/
+void shell_sort(int *arr, SDL_Renderer *renderer) {
+    for (int i = C.width / 2; i > 0; i /= 2) {
+        for (int j = i; j < C.width; j++) {
+            int tmp = arr[j];
+
+            int k;
+            for (k = j; k >= i && arr[k - i] > tmp; k -= i) {
+                arr[k] = arr[k - i];
+            }
+
+            arr[k] = tmp;
+
+            update_screen(arr, renderer, j, k);
+        }
+    }
+}
+
 /*** ARGUMENTS ***/
 
 /**
@@ -314,6 +335,7 @@ void handle_args(int argc, char **argv) {
             printf("  Bubble sort -- bs\n");
             printf("  Merge sort -- ms\n");
             printf("  Quick sort -- qs\n");
+            printf("  Shell sort -- shs\n");
             exit(0);
         } else if (strcmp(argv[arg_pos], "ss") == 0) {
             C.algorithm = SELECTION_SORT;
@@ -325,6 +347,8 @@ void handle_args(int argc, char **argv) {
             C.algorithm = MERGE_SORT;
         } else if (strcmp(argv[arg_pos], "qs") == 0) {
             C.algorithm = QUICK_SORT;
+        } else if (strcmp(argv[arg_pos], "shs") == 0) {
+            C.algorithm = SHELL_SORT;
         } else {
             fprintf(stderr, "Unknown algorithm (use `help` to see available ones)\n");
             exit(1);
@@ -390,6 +414,9 @@ int main(int argc, char **argv) {
             break;
         case QUICK_SORT:
             quick_sort(arr, 0, C.width - 1, renderer);
+            break;
+        case SHELL_SORT:
+            shell_sort(arr, renderer);
             break;
     }
 
